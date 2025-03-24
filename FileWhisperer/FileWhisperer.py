@@ -218,7 +218,7 @@ def _display_files(files: list[CleanFile | dict[CleanFile, list]]):
         elif isinstance(f, dict):
             _display_files(f[list(f.keys())[0]])
 
-def _get_directory_contents(path: str, depth: int = 1) -> list[CleanFile | dict[str, list]]:
+def get_directory_contents(path: str, depth: int = 1) -> list[CleanFile | dict[str, list]]:
     files = opr.enumerate_directory(path, depth)
     return clean_files(files, path)
 
