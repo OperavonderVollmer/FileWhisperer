@@ -219,6 +219,23 @@ def _display_files(files: list[CleanFile | dict[CleanFile, list]]):
             _display_files(f[list(f.keys())[0]])
 
 def get_directory_contents(path: str, depth: int = 1) -> list[CleanFile | dict[str, list]]:
+    """
+    Enumerates the contents of a directory and returns a list of CleanFile objects or dictionaries representing subdirectories.
+
+    This function takes a path to a directory and an optional depth parameter, and returns a list containing CleanFile objects for individual files or dictionaries for subdirectories. The function recursively processes nested directories to ensure all files and subdirectories are properly encapsulated.
+
+    Parameters
+    ----------
+    path : str
+        The path to the directory to be enumerated.
+    depth : int, optional
+        The maximum depth to which the directory should be enumerated. Defaults to 1.
+
+    Returns
+    -------
+    list[CleanFile | dict[str, list]]
+        A list containing CleanFile objects for individual files or dictionaries for subdirectories.
+    """
     files = opr.enumerate_directory(path, depth)
     return clean_files(files, path)
 
