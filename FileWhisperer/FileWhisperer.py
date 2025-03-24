@@ -59,6 +59,32 @@ IMAGE_FORMATS = [
 
 
 class CleanFile:
+    """
+    A class used to represent a file and its associated metadata.
+
+    Attributes
+    ----------
+    _name : str
+        The name of the file.
+    _original_name : str
+        The original name of the file.
+    _path : str
+        The path to the file.
+    _original_path : str
+        The original path to the file.
+    _metadata : dict[str, list] or None
+        The metadata associated with the file.
+
+    Methods
+    -------
+    __init__(name: str, path: str) -> None
+        Initializes a CleanFile object with a name and path, and collects its metadata.
+    __str__() -> str
+        Returns the name of the file.
+    Name() -> str
+        Gets or sets the name of the file, adjusting the path accordingly.
+    """
+
     def __init__(self, name: str, path: str) -> None:
         self._name = name
         self._original_name = name
@@ -74,6 +100,16 @@ class CleanFile:
         return self._name
     @Name.setter
     def Name(self, value: str):
+        """
+        Sets the name of the file, ensuring the correct file extension is preserved.
+        Updates the file path accordingly.
+
+        Parameters
+        ----------
+        value : str
+            The new name for the file.
+        """
+
         ext = os.path.splitext(self._path)[1]
         if not value.endswith(ext):
             value += ext
@@ -97,12 +133,16 @@ class CleanFile:
     def Metadata_dict(self, value: dict[str, str]):
         self._metadata = value
 
-    def Save(self) -> None: _save_metadata(self)
+    def Save(self) -> None: 
+        """
+        Saves the metadata of a file. If the file's name has changed, the file is renamed to the new name.
+        """
+        
+        _save_metadata(self)
 
 
 
 def _save_metadata(file: CleanFile) -> bool:
-
     try:
 
         if file._original_path != file.Path:
@@ -183,6 +223,28 @@ def _get_directory_contents(path: str, depth: int = 1) -> list[CleanFile | dict[
     return clean_files(files, path)
 
 def clean_files(files: list[str | dict[str, list]], path) -> list[CleanFile | dict [str, list]]:
+    """
+    Cleans and organizes a list of file paths and directories into CleanFile objects or nested dictionaries.
+
+    This function takes a list of file paths and directory structures, processes each item, and returns a list
+    containing CleanFile objects for individual files or dictionaries for subdirectories. The function recursively
+    processes nested directories to ensure all files and subdirectories are properly encapsulated.
+
+    Parameters
+    ----------
+    files : list of str or dict[str, list]
+        A list containing file paths as strings and directories as dictionaries with subdirectory names as keys
+        and their contents as values.
+    path : str
+        The base directory path to prepend to each file or directory for constructing full paths.
+
+    Returns
+    -------
+    list of CleanFile or dict[str, list]
+        A list of CleanFile objects for each file and dictionaries for directories representing the cleaned and
+        organized structure of the input file list.
+    """
+
     cleaned_files = []
     for f in files:
         if isinstance(f, str):            
@@ -197,6 +259,26 @@ def clean_files(files: list[str | dict[str, list]], path) -> list[CleanFile | di
     return cleaned_files
 
 def get_audio_metadata(path: str) -> dict[str, str] | None:
+    """
+    Extracts and returns metadata from an audio file.
+
+    This function utilizes the taglib library to read metadata from an audio file
+    specified by the provided path. It retrieves the title, artist, album, and date
+    of last modification of the audio file. If the file format is unsupported or an 
+    error occurs during the process, it logs the error and returns None.
+
+    Parameters
+    ----------
+    path : str
+        The file path to the audio file from which metadata is to be extracted.
+
+    Returns
+    -------
+    dict[str, str] | None
+        A dictionary containing the audio metadata with keys 'TITLE', 'ARTIST', 'ALBUM', 
+        and 'DATE'. Returns None if the file format is unsupported or an error occurs.
+    """
+
     import taglib
     from datetime import datetime
 
@@ -223,6 +305,28 @@ def get_audio_metadata(path: str) -> dict[str, str] | None:
         return None
 
 def get_image_metadata(path: str) -> dict[str, str] | None:
+    """
+    Extracts and returns metadata from an image file using EXIF data.
+
+    This function opens an image file specified by the given path and attempts
+    to extract its metadata using the EXIF standard. The metadata is returned
+    as a dictionary with tag names as keys and corresponding values. If the
+    image does not contain EXIF data or if an error occurs, it logs the error
+    and returns None.
+
+    Parameters
+    ----------
+    path : str
+        The file path to the image file from which metadata is to be extracted.
+
+    Returns
+    -------
+    dict[str, str] | None
+        A dictionary containing the image metadata with EXIF tag names as keys
+        and their corresponding values. Returns None if the image does not 
+        contain EXIF data or an error occurs during extraction.
+    """
+
     from PIL import Image
     from PIL.ExifTags import TAGS
     import traceback
@@ -251,7 +355,7 @@ def get_image_metadata(path: str) -> dict[str, str] | None:
 
 
 def get_metadata_omni(path: str) -> dict[str, list] | None:
-    path = clean_path(path)
+    path = _clean_path(path)
     if any(path.endswith(f) for f in AUDIO_FORMATS):
         return get_audio_metadata(path)
     if any(path.endswith(f) for f in IMAGE_FORMATS):
@@ -262,6 +366,25 @@ def get_metadata_omni(path: str) -> dict[str, list] | None:
 
 def get_all_metadata(files: list[CleanFile | dict[str, list]]) -> list[CleanFile, dict[str, list]] | None:
     
+    """
+    Collects metadata from a list of CleanFile objects and dictionaries representing a directory structure.
+
+    This function iterates over the input list and collects metadata from each CleanFile object and recursively
+    from each dictionary representing a subdirectory. If a file format is unsupported or an error occurs during
+    metadata extraction, it logs an error and continues with the next file.
+
+    Parameters
+    ----------
+    files : list[CleanFile | dict[str, list]]
+        A list of CleanFile objects and dictionaries representing the directory structure from which metadata is
+        to be collected.
+
+    Returns
+    -------
+    list[CleanFile, dict[str, list]] | None
+        A list of dictionaries containing metadata for each file and subdirectory in the input list. Returns None
+        if an error occurs during metadata extraction.
+    """
     serialized_files = []
 
     for f in files:
@@ -281,7 +404,23 @@ def get_all_metadata(files: list[CleanFile | dict[str, list]]) -> list[CleanFile
 
     return serialized_files
 
-def clean_path(path: str) -> str:
+def _clean_path(path: str) -> str:
+    """
+    This method is obsolete and should not be used. Instead, use the one found in the OperaPowerRelay module.
+
+    This method cleans a path by removing any leading or trailing quotes, and
+    replacing any double quotes with single quotes.
+
+    Parameters
+    ----------
+    path : str
+        The path to be cleaned.
+
+    Returns
+    -------
+    str
+        The cleaned path.
+    """
     if path.startswith("& "):
         path = path[2:]
 
