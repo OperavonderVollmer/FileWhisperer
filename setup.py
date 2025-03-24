@@ -8,7 +8,7 @@ setup(
         "pytaglib",
         "python-magic-bin",
         "pillow",
-        "git+https://github.com/OperavonderVollmer/OperaPowerRelay.git@v1.1.2",
+        "OperaPowerRelay @ git+https://github.com/OperavonderVollmer/OperaPowerRelay.git@v1.1.2",
     ],
     python_requires=">=3.7",
     author="Opera von der Vollmer",
