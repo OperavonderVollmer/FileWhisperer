@@ -1,0 +1,3 @@
+pytaglib
+python-magic-bin
+pillow
