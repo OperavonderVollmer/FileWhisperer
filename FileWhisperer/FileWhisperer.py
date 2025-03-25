@@ -124,8 +124,11 @@ class CleanFile:
     
     @property
     def Metadata(self) -> str:
-        return "\n".join(f"{key}: {value}" for key, value in self._metadata.items()) or f"{self._name} has no metadata"
-        
+        if self._metadata:
+            return "\n".join(f"{key}: {value}" for key, value in self._metadata.items())
+        else: 
+            return f"{self._name} has no metadata"
+            
     @property
     def Metadata_dict(self) -> dict[str, str]:
         return self._metadata or {}
@@ -211,12 +214,12 @@ def _save_audio_metadata(file: CleanFile) -> bool:
 def _save_image_metadata(file: CleanFile) -> bool:
     return _save_metadata(file)
 
-def _display_files(files: list[CleanFile | dict[CleanFile, list]]):
+def display_files(files: list[CleanFile | dict[CleanFile, list]]):
     for f in files:
         if isinstance(f, CleanFile):
-            print(f"PATH: {f.path}\nNAME: {f.name}\nMETADATA:\n{f.get_metadata}\n")
+            print(f"PATH: {f.Path}\nNAME: {f.Name}\nMETADATA:\n{f.Metadata}\n")
         elif isinstance(f, dict):
-            _display_files(f[list(f.keys())[0]])
+            display_files(f[list(f.keys())[0]])
 
 def get_directory_contents(path: str, depth: int = 1) -> list[CleanFile | dict[str, list]]:
     """
@@ -236,7 +239,8 @@ def get_directory_contents(path: str, depth: int = 1) -> list[CleanFile | dict[s
     list[CleanFile | dict[str, list]]
         A list containing CleanFile objects for individual files or dictionaries for subdirectories.
     """
-    files = opr.enumerate_directory(path, depth)
+    cleaned_path = _clean_path(path)
+    files = opr.enumerate_directory(cleaned_path, depth)
     return clean_files(files, path)
 
 def clean_files(files: list[str | dict[str, list]], path) -> list[CleanFile | dict [str, list]]:
@@ -381,9 +385,11 @@ def get_metadata_omni(path: str) -> dict[str, list] | None:
         opr.print_from("FileWhisperer - Get Metadata Omni" , f"METADATA NOT AVAILABLE FOR: {os.path.basename(path)}")
 
 
-def get_all_metadata(files: list[CleanFile | dict[str, list]]) -> list[CleanFile, dict[str, list]] | None:
+def _get_all_metadata(files: list[CleanFile | dict[str, list]]) -> list[CleanFile, dict[str, list]] | None:
     
     """
+    NOTE: Depreciated and shouldn't be used. Metadata collection is handled by the CleanFiles themselves
+
     Collects metadata from a list of CleanFile objects and dictionaries representing a directory structure.
 
     This function iterates over the input list and collects metadata from each CleanFile object and recursively
@@ -412,7 +418,7 @@ def get_all_metadata(files: list[CleanFile | dict[str, list]]) -> list[CleanFile
                 serialized_files.append(_)
         elif isinstance(f, list):
             opr.print_from("FileWhisperer - Get all metadata", f"Collecting metadata for directory {os.path.basename(f)}")
-            _ = get_all_metadata(f)
+            _ = _get_all_metadata(f)
             if _ is not None:
                 serialized_files.append(_)
         else: 
@@ -449,3 +455,52 @@ def _clean_path(path: str) -> str:
 
     return os.path.normpath(path)
 
+def rename_file(file: CleanFile, new_name) -> CleanFile:
+    old_name = file.Name
+    file.Name = new_name
+
+    opr.print_from("FileWhisperer - Rename File", f"SUCCESS: Renamed {old_name} to {file.Name}")
+    return file
+
+def save_clean_files(files: list[CleanFile | dict [str, list]]) -> bool:
+
+    try:        
+        for f in files:
+            if isinstance(f, CleanFile):
+                f.Save()
+            elif isinstance(f, dict):
+                subdirectory_name, subdirectory_items = next(iter(f.items()))
+                save_clean_files(subdirectory_items)
+
+        opr.print_from("FileWhisperer - Save Clean files", f"SUCCESS: Completed save of clean files")
+        return True
+    
+    except Exception:
+        error_message = traceback.format_exc()
+        opr.print_from("FileWhisperer - Save Clean Files", f"FAILED: Unexpected Error while saving clean files: {error_message}")
+        return False
+    
+
+def get_one_file(path: str) -> CleanFile:
+    path = _clean_path(path)
+    file = CleanFile(os.path.basename(path), path)
+    return file
+
+if __name__ == "__main__":
+# for testing purposes
+    """
+    opr.print_from("FileWhisperer", "Starting...")
+    path = input("Path: ")
+    depth = int(input("Depth: "))
+    directory = get_directory_contents(path, depth)
+    display_files(directory)
+    """
+    path = input("Enter: ")
+    path = _clean_path(path)
+    filename = os.path.basename(path)
+    file = CleanFile(filename, path)
+    print(file.Metadata_dict)
+    """
+    file.Save()
+    print(f"Name: {file.Name}\nPath: {file.Path}")
+    """
