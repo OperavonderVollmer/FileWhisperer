@@ -21,7 +21,7 @@ FileWhisperer is a Python package designed for handling file metadata, renaming,
   ```
 - [OperaPowerRelay](https://github.com/OperavonderVollmer/OperaPowerRelay) (Required for additional utilities)
   ```sh
-  pip install git+https://github.com/OperavonderVollmer/OperaPowerRelay.git
+  pip install git+https://github.com/OperavonderVollmer/OperaPowerRelay.git@v1.1.2
   ```
 
 ### Manual Installation
