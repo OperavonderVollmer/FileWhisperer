@@ -39,7 +39,7 @@ FileWhisperer is a Python package designed for handling file metadata, renaming,
 ### Installing via pip:
 
 ```sh
-pip install git+https://github.com/OperavonderVollmer/FileWhisperer.git@latest
+pip install git+https://github.com/OperavonderVollmer/FileWhisperer.git@main
 ```
 
 Make sure you have the necessary dependencies installed in your environment.
