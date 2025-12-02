@@ -1,4 +1,4 @@
 pytaglib
 python-magic-bin
 pillow
-git+https://github.com/OperavonderVollmer/OperaPowerRelay.git@main
+git+https://github.com/OperavonderVollmer/OperaPowerRelay.git
